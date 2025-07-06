@@ -29,7 +29,7 @@ import { Telefonos } from './entities/telefonos.entity';
         return {
           secret: configService.get('JWT_SECRET'),
           signOptions:{
-            expiresIn: '30m'
+            expiresIn: '10h'
           }
         }
       }

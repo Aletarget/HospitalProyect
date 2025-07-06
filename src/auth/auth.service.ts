@@ -1,4 +1,4 @@
-import {  BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {  BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
@@ -55,7 +55,7 @@ export class AuthService {
     const {correo, password} = loginUserDto;
 
     const user = await this.userRepository.findOne({
-      select:{password:true, cedula:true, correo:true},
+      select:{password:true, cedula:true, correo:true, permisos: true, estado:true},
       where: {correo}
     })
 
@@ -64,11 +64,8 @@ export class AuthService {
 
     if(!bcrypt.compareSync(password, user.password))
       throw new BadRequestException('Constraseña invalida intente denuevo')
-
-    return{ 
-      cedula: user.cedula,
-      correo: user.correo,
-      token: this.getJwtToken({correo: user.correo})}
+    return{
+      token: this.getJwtToken({correo: user.correo, cedula: user.cedula, permisos: user.permisos, estado: user.estado})}
   }
  
   private getJwtToken(payload: JwtPayload){
@@ -76,4 +73,19 @@ export class AuthService {
     return token;
   }
 
+
+  async delete(cedula: string){
+    const user = await this.findOne(cedula)
+    this.userRepository.remove(user);
+  }
+
+
+  async findOne(cedula: string): Promise<Usuarios>{
+    const user = await this.userRepository.findOneBy({cedula})
+    
+    if(!user){
+      throw new NotFoundException(`No se ha encontrado el usuario identificado con CC: ${cedula}`);
+    }
+    return user;
+  }
 }

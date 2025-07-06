@@ -16,10 +16,11 @@ export class Medicos{
 
 
     @Column('text')
-    especialidad: string;
+    departamento: string;
 
     @Column('text',{
         unique:true
     })
     registro_medico: string;
+
 }

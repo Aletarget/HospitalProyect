@@ -23,10 +23,8 @@ export class UserPermisosGuard implements CanActivate {
     if (!user)
       throw new BadRequestException('Usuario no encontrado')
     console.log({userPermision: user.permisos})
-    for(const permiso of user.permisos){
-      if(permisosValidos.includes(permiso)){
-        return true;
-      }
+    if(permisosValidos.includes(user.permisos)){
+      return true;
     }
     throw new ForbiddenException(`El usuario identificado con CC: ${user.cedula}, no tiene los permisos para realizar la operacion`);
   }

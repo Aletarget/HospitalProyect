@@ -1,5 +1,4 @@
-import { ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsOptional, IsString, Length, Max, MaxLength, MinLength } from "class-validator";
-import { Telefonos } from "../entities/telefonos.entity";
+import { ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsIn, IsOptional, IsString, Length, MinLength } from "class-validator";
 
 export class CreateUserDto {
 
@@ -15,10 +14,10 @@ export class CreateUserDto {
     @IsString()
     nombre: string;
 
-    @IsArray()
-    @IsString({each:true})
+    @IsString()
     @IsOptional()
-    permisos?: string[]
+    @IsIn(['admin','medico','gestor','super-user','user','farmaceutico'])
+    permisos?: string;
 
     @IsString()
     calle: string;

@@ -5,5 +5,6 @@ export enum permisosValidos{
     medico = 'medico',
     gestor = 'gestor',
     superUser = 'super-user',
-    user = 'user'
+    user = 'user',
+    farmaceutico = 'farmaceutico'
 }

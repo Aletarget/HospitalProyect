@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel del Empleado</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fffbea;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #a67c00;
+    }
+    .btn-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #a67c00;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #805f00;
+    }
+  </style>
+</head>
+<body>
+  <h1>Paciente - Área Personal</h1>
+  <div class="btn-container">
+    <button onclick="location.href='#'">Consultar Citas</button>
+    <button onclick="location.href='#'">Simular Compra de Medicamentos</button>
+    <button onclick="historial()">Consultar Historial Clinico</button>
+    <div class="info"></div>
+    <div class="info">
+    </div>
+
+  </div>
+
+  
+    <script>
+        let cedulaUsuario = null;
+        (async () => {
+        const token = localStorage.getItem('token');
+        if(!token){
+            alert(`Acceso invalido, se redirigira al modulo de ingreso`)
+            window.location.href = '../index.html';
+            return;
+        }
+        try {
+            const response = await fetch('http://localhost:3000/auth', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+            });
+            
+            if(!response.ok) throw new Error("Token Invalido");
+            
+            const data = await response.json();
+            // Validación de permisos
+            if (data.permisos != 'user') {
+                alert('No tienes permisos para acceder a esta página');
+                window.location.href = '../index.html';
+                return;
+            }
+            cedulaUsuario = data.cedula
+
+        } catch (err) {
+            console.error(err);
+            alert('Error de autenticación');
+            window.location.href = '../index.html';
+        }
+    })();
+
+        async function historial() {
+            const cedula = cedulaUsuario;
+            const infoDiv = document.querySelector('.info');
+
+            try {
+            const response = await fetch(`http://localhost:3000/pacientes/histClinic/${cedula}`,
+            {method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }});
+            
+            if (!response.ok) {
+                throw new Error('No se encontró historial clínico');
+            }
+
+            const data = await response.json();
+            console.log(data)
+            // Mostrar los datos en el div
+            infoDiv.innerHTML = `
+                <h2><b>Historial Clínico</h2>
+                <p><strong>ID Historial:</strong> ${data.id_historial}</p>
+                <p><strong>Fecha de inicio:</strong> ${data.fecha_inicio}</p>
+                <h2><b>Paciente</h2>
+                <p><strong>Cédula:</strong> ${data.paciente.cedula}</p>
+                <p><strong>Fecha de nacimiento:</strong> ${data.paciente.fecha_nac}</p>
+                
+                <h4>Registros:</h4>
+                <ul>
+                ${data.registro.map(r => `
+                    <li>
+                    <strong>Fecha:</strong> ${r.fecha}<br>
+                    <strong>Descripción:</strong> ${r.descripcion}
+                    </li>
+                `).join('')}
+                </ul>
+            `;
+
+            } catch (err) {
+            infoDiv.innerHTML = `<p style="color:red;">${err.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -23,19 +23,4 @@ export class EmpleadosController {
     @Body() createEmpleadoMedicoDto: CreateEmpleadoMedicoDto) {
     return this.empleadosService.createMedico(createEmpleadoMedicoDto);
   }
-
-  @Get()
-  findAll() {
-    return this.empleadosService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.empleadosService.findOne(+id);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.empleadosService.remove(+id);
-  }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, SetMetadata } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, SetMetadata, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/createUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
@@ -20,9 +20,16 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
-  @Delete(':id')
-  @Auth(permisosValidos.superUser)
-  deleteUser(){
-    
+  @Delete(':cedula')
+  @Auth(permisosValidos.superUser, permisosValidos.admin)
+  deleteUser(@Param('cedula') cedula: string){
+    return this.authService.delete(cedula)
   }
+
+  @Get()
+  @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.user)
+  getUser(@Request() req){
+    return {permisos: req.user.permisos, cedula: req.user.cedula};
+  }
+
 }

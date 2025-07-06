@@ -1,6 +1,8 @@
 import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { Telefonos } from "./telefonos.entity";
 import { Empleados } from "src/empleados/entities";
+import { Pacientes } from "src/pacientes/entities/paciente.entity";
+import { Farmaceuticos } from "src/farmacias/entities";
 
 @Entity({schema: 'usuarios'})
 export class Usuarios {
@@ -30,12 +32,10 @@ export class Usuarios {
 
 
     @Column('text',{
-        
-        array: true,
         nullable:false,
-        default: ['user']
+        default: 'user'
     })
-    permisos: string[];
+    permisos: string;
 
 
     @Column('text',{
@@ -77,12 +77,16 @@ export class Usuarios {
 
     @OneToOne(
         () => Empleados,
-        empleado => empleado.cedula,
-        {
-            onDelete: "CASCADE"
-        }
+        empleado => empleado.cedula
     )
     empleado: Empleados;
+
+
+    @OneToOne(
+        () => Pacientes,
+        paciente => paciente.cedula
+    )
+    paciente: Pacientes;
 
 
 

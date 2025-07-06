@@ -1,10 +1,11 @@
-import { IsString } from "class-validator";
+import { IsIn, IsString } from "class-validator";
 
 export class CreateMedicoDto{
 
 
     @IsString()
-    especialidad: string;
+    @IsIn(['cardiologia', 'neurologia'])
+    departamento: string;
 
     @IsString()
     registro_medico: string;

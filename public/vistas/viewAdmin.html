@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel Administrador</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #2a5d9f;
+    }
+    .btn-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #2a5d9f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #1e477c;
+    }
+  </style>
+</head>
+<body>
+  <h1>Administrador - Panel de Control</h1>
+  <div class="btn-container">
+    <button onclick="location.href='#'">Agendar Citas</button>
+    <button onclick="location.href='#'">Consultar Agendas de Médicos</button>
+    <button onclick="location.href='#'">Registrar Nuevo Paciente</button>
+    <button onclick="location.href='#'">Registrar Nuevo Empleado</button>
+  </div>
+  <script>
+
+   (async () => {
+        const token = localStorage.getItem('token');
+        if(!token){
+            alert(`Acceso invalido, se redirigira al modulo de ingreso`)
+            window.location.href = '../index.html';
+            return;
+        }
+        try {
+            const response = await fetch('http://localhost:3000/auth', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+            });
+            
+            if(!response.ok) throw new Error("Token Invalido");
+            
+            const data = await response.json();
+            // Validación de permisos
+            if (data.permisos != 'admin') {
+                alert('No tienes permisos para acceder a esta página');
+                window.location.href = '../index.html';
+                return;
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert('Error de autenticación');
+            window.location.href = '../index.html';
+        }
+    })();
+
+  </script>
+</body>
+</html>

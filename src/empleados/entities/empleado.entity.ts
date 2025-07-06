@@ -12,7 +12,7 @@ export class Empleados{
     @Column('date')
     fecha_ingreso: Date;
 
-    @Column('decimal', {precision: 10, scale:2})
+    @Column('numeric', {precision: 10, scale:2})
     salario: number;
 
 
@@ -36,13 +36,13 @@ export class Empleados{
 
     @OneToOne(
         () => Administrativos,
-        admin => admin.id_empleado,
+        admin => admin.id_empleado
     )
     admin: Administrativos;
 
     @OneToOne(
         () => Medicos,
-        medico => medico.id_empleado,
+        medico => medico.id_empleado
     )
     medico: Medicos;
 
