@@ -10,7 +10,6 @@ import { Historia_clinica } from './entities/hist-clinica.entity';
 
 import { CreateDefPacienteDto } from './dto/crate-defPaciente.dto';
 import { CreateRegistroDto } from './entities';
-import { resourceUsage } from 'process';
 // import { CreateRegistroDto } from './entities';
 
 
@@ -44,20 +43,20 @@ export class PacientesService {
       
       let paciente = this.pacientesRepository.create({
         ... pacienteDto,
-        cedula: user.cedula
+        usuario: user
       })
       paciente = await this.pacientesRepository.save(paciente)
       
       let hist_clinica = this.historiaReposority.create({
         fecha_inicio: fecha,
-        paciente: paciente.cedula
+        paciente: paciente
       })
       hist_clinica = await this.historiaReposority.save(hist_clinica);
 
       return {userDto, pacienteDto, hist_clinica}
 
     } catch (error) {
-      logger.log(error.detail)
+      logger.log(error)
       await this.authService.delete(userDto.cedula);
       throw new InternalServerErrorException(`Ha ocurrido un error al intentar crear el paciente (check logs, code error: ${error.code})`)      
     }
@@ -84,8 +83,8 @@ export class PacientesService {
 // CREAR UN NUEVO REGISTRO
   async crearRegistro(createRegistroDto: CreateRegistroDto){
     const {cedula, ...registroData} = createRegistroDto;
-    const paciente = await this.pacientesRepository.findOneBy({cedula})
-    if(!paciente) throw new NotFoundException(`El paciente con cedula: ${cedula} no fue encontrado`)
+    // const paciente = await this.pacientesRepository.findOne({where: {cedula}, relations: ['usuario']})
+    // if(!paciente) throw new NotFoundException(`El paciente con cedula: ${cedula} no fue encontrado`)
     //Consultar el id_historial del paciente
     try {
       const pacienteHistorial = await this.historiaReposority
@@ -103,7 +102,6 @@ export class PacientesService {
       
       registro = await this.registrosRepository.save(registro);
 
-
       return `Se ha actualizado la historia clinica del paciente identificado con CC:${cedula}, 
               número de registro generado: ${registro.id_registro} `
       
@@ -111,5 +109,16 @@ export class PacientesService {
       this.logger.log(error.detail)
       throw new InternalServerErrorException(`Ha ocurrido un error: ${error.message}`)
     }
+  }
+
+  async buscarPaciente(cedula: string){
+    return await this.pacientesRepository.findOneBy({});
+  }
+
+  async buscarCodHistorial(cedula: string){
+    const paciente = await this.pacientesRepository.findOneBy({cedula})
+    if(!paciente) throw new BadRequestException(`El paciente con cc: ${cedula} no se encontro`)
+    const historial = await this.historiaReposority.findOneBy({paciente})
+    return historial!.id_historial;
   }
 }

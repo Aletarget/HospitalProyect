@@ -22,7 +22,7 @@ export class Farmaceuticos{
         }
     )
     @JoinColumn({name: 'id_farmacia'})
-    id_farmacia: number;
+    farmacia: Farmacias;
 
 
 }

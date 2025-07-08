@@ -10,7 +10,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('sign')
-  @Auth(permisosValidos.admin)
+  @Auth(permisosValidos.admin, permisosValidos.superUser)
   register(@Body() createUserDto: CreateUserDto) {
     return this.authService.register(createUserDto);
   }
@@ -27,9 +27,10 @@ export class AuthController {
   }
 
   @Get()
-  @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.user)
+  @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.user, permisosValidos.superUser)
   getUser(@Request() req){
-    return {permisos: req.user.permisos, cedula: req.user.cedula};
+    console.log(req.user)
+    return {permisos: req.user.permisos, cedula: req.user.cedula, id: req.user.id_empleado};
   }
 
 }

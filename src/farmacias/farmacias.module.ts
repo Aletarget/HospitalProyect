@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { FarmaciasService } from './farmacias.service';
 import { FarmaciasController } from './farmacias.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Farmacias_Medicamentos, Farmacias, Medicamentos, Farmaceuticos } from './entities';
+import { Farmacias_Medicamentos, Farmacias, Medicamentos, Farmaceuticos, Adquiere } from './entities';
 import { AuthModule } from 'src/auth/auth.module';
 
 
@@ -17,8 +17,12 @@ import { AuthModule } from 'src/auth/auth.module';
       Farmacias,
       Medicamentos,
       Farmacias_Medicamentos,
-      Farmaceuticos
+      Farmaceuticos,
+      Adquiere
     ], 'farmaciasConnection')
+  ],
+  exports: [
+    FarmaciasService
   ]
 })
 

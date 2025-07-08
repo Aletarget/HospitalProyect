@@ -14,6 +14,8 @@ import { AuthModule } from 'src/auth/auth.module';
   imports: [
     TypeOrmModule.forFeature([Pacientes, Historia_clinica, Registro], 'usuariosConnection'),
     AuthModule
-  ]
+  ],
+  exports: [PacientesService]
+
 })
 export class PacientesModule {}

@@ -11,14 +11,14 @@ export class EmpleadosController {
 
 
   @Post('regadmin')
-  @Auth(permisosValidos.admin)
+  @Auth(permisosValidos.admin, permisosValidos.superUser)
   createAdministrativo(
     @Body() createEmpleadoAdminDto: CreateEmpleadoAdminDto) {
     return this.empleadosService.createAdmin(createEmpleadoAdminDto);
   }
 
   @Post('regmedico')
-  @Auth(permisosValidos.admin)
+  @Auth(permisosValidos.admin, permisosValidos.superUser)
   createMedico(
     @Body() createEmpleadoMedicoDto: CreateEmpleadoMedicoDto) {
     return this.empleadosService.createMedico(createEmpleadoMedicoDto);

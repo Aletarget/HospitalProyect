@@ -2,7 +2,6 @@ import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { Telefonos } from "./telefonos.entity";
 import { Empleados } from "src/empleados/entities";
 import { Pacientes } from "src/pacientes/entities/paciente.entity";
-import { Farmaceuticos } from "src/farmacias/entities";
 
 @Entity({schema: 'usuarios'})
 export class Usuarios {
@@ -77,18 +76,22 @@ export class Usuarios {
 
     @OneToOne(
         () => Empleados,
-        empleado => empleado.cedula
+        empleado => empleado.usuario,{
+            cascade: true
+        }
     )
     empleado: Empleados;
 
 
     @OneToOne(
         () => Pacientes,
-        paciente => paciente.cedula
+        paciente => paciente.cedula,{
+            cascade: true
+        }
     )
     paciente: Pacientes;
 
 
-
+    
 
 }

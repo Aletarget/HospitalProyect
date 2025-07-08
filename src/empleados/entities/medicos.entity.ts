@@ -5,6 +5,8 @@ import { Empleados } from "./empleado.entity";
 export class Medicos{
 
     @PrimaryColumn('uuid')
+    id_empleado: string;
+
     @OneToOne(
         () => Empleados,
         empleado => empleado.id_empleado,{
@@ -12,7 +14,7 @@ export class Medicos{
         }
     )
     @JoinColumn({name: 'id_empleado'})
-    id_empleado: string;
+    empleado: Empleados;
 
 
     @Column('text')
@@ -22,5 +24,6 @@ export class Medicos{
         unique:true
     })
     registro_medico: string;
+
 
 }

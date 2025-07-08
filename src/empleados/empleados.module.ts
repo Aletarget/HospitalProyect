@@ -11,6 +11,9 @@ import { AuthModule } from 'src/auth/auth.module';
   imports: [
     TypeOrmModule.forFeature([Empleados, Administrativos, Medicos], 'usuariosConnection'),
     AuthModule
+  ],
+  exports: [
+    EmpleadosService
   ]
 })
 export class EmpleadosModule {}

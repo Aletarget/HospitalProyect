@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
 import { Farmacias_Medicamentos } from "./farm-med.entity";
 import { Farmaceuticos } from "./farmaceuticos.entity";
+import { Adquiere } from "./adquiere.entity";
 
 
 @Entity({schema:'farmacias'})
@@ -32,7 +33,7 @@ export class Farmacias {
 
     @OneToMany(
         () => Farmacias_Medicamentos,
-        farmacia_medicamento => farmacia_medicamento.id_farmacia,
+        farmacia_medicamento => farmacia_medicamento.farmacia,
             {
             cascade:true,
             eager: true
@@ -43,10 +44,20 @@ export class Farmacias {
 
     @OneToMany(
         () => Farmaceuticos,
-        farmaceuticos => farmaceuticos.id_farmacia,{
+        farmaceuticos => farmaceuticos.farmacia,{
             cascade: true,
             eager:true
         }
     )
     farmaceuticos: Farmaceuticos[]
+
+    @OneToMany(
+            () => Adquiere,
+            adquiere => adquiere.id_farmacia,
+            {
+                cascade: true,
+                eager: true
+            }
+        )
+    adquiere: Adquiere[]
 }

@@ -15,6 +15,8 @@ export class Empleados{
     @Column('numeric', {precision: 10, scale:2})
     salario: number;
 
+    @Column('text')
+    cedula: string;
 
     @Column('time')
     hora_inicio: string;
@@ -31,18 +33,20 @@ export class Empleados{
         }
     )
     @JoinColumn({name : 'cedula'})
-    cedula: string;
+    usuario: Usuarios;
 
 
     @OneToOne(
         () => Administrativos,
-        admin => admin.id_empleado
+        admin => admin.id_empleado,{
+            cascade: true
+        }
     )
     admin: Administrativos;
 
     @OneToOne(
         () => Medicos,
-        medico => medico.id_empleado
+        medico => medico.empleado
     )
     medico: Medicos;
 

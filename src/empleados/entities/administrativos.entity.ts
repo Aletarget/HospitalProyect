@@ -4,10 +4,13 @@ import { Empleados } from "./empleado.entity";
 @Entity({schema: 'empleados'})
 export class Administrativos{
 
+    @PrimaryColumn('uuid')
+    id_empleado: string;
+
+
     @Column('text')
     cargo_admin:string;
 
-    @PrimaryColumn('uuid')
     @OneToOne(
         () => Empleados,
         empleado => empleado.id_empleado,{
@@ -15,6 +18,6 @@ export class Administrativos{
         }
     )
     @JoinColumn({name: 'id_empleado'})
-    id_empleado: string;
+    empleado: Empleados;
 
 }

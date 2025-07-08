@@ -8,26 +8,10 @@ export class Farmacias_Medicamentos {
 
 
     @PrimaryColumn('integer')
-    @ManyToOne(
-        () => Farmacias,
-        farmacia => farmacia.farmacia_medicamento,{
-            onDelete: "CASCADE"
-        }
-    )
-    @JoinColumn({name: 'id_farmacia'})
     id_farmacia: number;
 
-    
     @PrimaryColumn('uuid')
-    @ManyToOne(
-        () => Medicamentos,
-        medicamento => medicamento.farmacia_medicamento,{
-            onDelete: "CASCADE"
-        }
-    )
-    @JoinColumn({name:'id_medicamento'})
     id_medicamento: string;
-
 
     @PrimaryColumn('text')
     lote: string;
@@ -35,6 +19,28 @@ export class Farmacias_Medicamentos {
     
     @Column('int')
     stock: number;
+
+    
+    @ManyToOne(
+        () => Farmacias,
+        farmacia => farmacia.farmacia_medicamento,{
+            onDelete: "CASCADE"
+        }
+    )
+    @JoinColumn({name: 'id_farmacia'})
+    farmacia: Farmacias;
+
+    
+    @ManyToOne(
+        () => Medicamentos,
+        medicamento => medicamento.farmacia_medicamento,{
+            onDelete: "CASCADE"
+        }
+    )
+    @JoinColumn({name:'id_medicamento'})
+    medicamento: Medicamentos;
+
+
 
 
 }

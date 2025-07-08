@@ -22,7 +22,7 @@ export class Historia_clinica{
         }
     )
     @JoinColumn({name: 'cedula'})
-    paciente: string;
+    paciente: Pacientes;
 
 
     @OneToMany(

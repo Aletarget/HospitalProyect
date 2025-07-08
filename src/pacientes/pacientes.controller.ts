@@ -10,20 +10,20 @@ export class PacientesController {
   constructor(private readonly pacientesService: PacientesService) {}
 
   @Post('regPaciente')
-  @Auth(permisosValidos.admin)
+  @Auth(permisosValidos.admin, permisosValidos.superUser)
   create(@Body() createPacienteDto: CreateDefPacienteDto) {
     return this.pacientesService.createPacienteHistorial(createPacienteDto);
   }
 
   @Get('histClinic/:cedula')
-  @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.user)
+  @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.user, permisosValidos.superUser)
   getHistClinic(@Param('cedula') cedula: string) {
     return this.pacientesService.consultarHistorial(cedula);
   } 
 
   
   @Post('crearReg')
-  @Auth(permisosValidos.medico)
+  @Auth(permisosValidos.medico, permisosValidos.superUser)
   crearRegistro(@Body() createRegistroDto: CreateRegistroDto) {
     return this.pacientesService.crearRegistro(createRegistroDto);
   }

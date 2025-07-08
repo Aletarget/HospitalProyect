@@ -1,10 +1,11 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateEmpleadoMedicoDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Administrativos, Empleados, Medicos } from './entities';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateEmpleadoAdminDto } from './dto/create-emplAdmin.dto';
+import { Usuarios } from 'src/auth/entities/usuarios.entity';
 
 @Injectable()
 export class EmpleadosService {
@@ -34,7 +35,7 @@ export class EmpleadosService {
       
       let employe = this.empleadoRepository.create({
         ... empleadoDto,
-        cedula: user.cedula
+        usuario: user
       });
       employe = await this.empleadoRepository.save(employe);
       
@@ -65,25 +66,45 @@ export class EmpleadosService {
       
       let employe = this.empleadoRepository.create({
         ... empleadoDto,
-        cedula: user.cedula
+        usuario: user
       });
       employe = await this.empleadoRepository.save(employe);
       
       let medico = this.medicoRepository.create({
         ...medicoDto,
-        id_empleado: employe.id_empleado
+        empleado: employe
       })
       
       medico = await this.medicoRepository.save(medico);
       console.log(medico);
 
       
-      return `Registro exitoso del nuevo empleado, su id es: ${medico.id_empleado}`; 
+      return {medico}
 
     } catch (error) {
-      logger.log(error);
+      logger.log(error.detail);
       throw new InternalServerErrorException(error.message);
     }
 
+  }
+
+  async getInfoMedico(id_empleado: string){
+
+    const data = await this.empleadoRepository.findOneBy({id_empleado})
+    if(!data) throw new NotFoundException(`El medico con id: ${id_empleado} no se encontro`)
+
+   const empleado = await this.empleadoRepository
+    .createQueryBuilder('empl')
+    .leftJoinAndSelect('empl.usuario', 'usuario')
+    .where('empl.id_empleado = :id_empleado', { id_empleado }) // o usa .where('empl.cedula = :cedula', { cedula }) si prefieres
+    .getOne();
+    return empleado;
+  }
+
+  async getInfoAdmin(cedula: string){
+    //No es necesario poner un trycatch porque la cedula que se le pasa al argumento
+    //es la misma que la del admnistrador que se encuentra con la sesion activa.
+    const data = await this.empleadoRepository.findOneBy({cedula})
+    return data?.id_empleado;
   }
 }

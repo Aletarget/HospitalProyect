@@ -6,6 +6,8 @@ import { Historia_clinica } from "./hist-clinica.entity";
 export class Pacientes {
 
     @PrimaryColumn('text')
+    cedula: string;
+
     @OneToOne(
         () => Usuarios,
         usuario => usuario.paciente,
@@ -14,7 +16,7 @@ export class Pacientes {
         }
     )
     @JoinColumn({name : 'cedula'})
-    cedula: string;
+    usuario: Usuarios;
 
     @Column('date')
     fecha_nac: Date;

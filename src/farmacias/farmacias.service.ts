@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateFarmaciaDto } from './dto/create-farmacia.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Farmaceuticos, Farmacias, Farmacias_Medicamentos, Medicamentos } from './entities';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateFarmaceuticoDto, CreateMedicamentoDto, Farmacia_MedicamentoDto } from './dto';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class FarmaciasService {
@@ -42,14 +43,17 @@ export class FarmaciasService {
     }   
 //Registrar un nuevo farmaceutico
     async createFarmaceutico(createFarmaceuticoDto : CreateFarmaceuticoDto){
-        const {userData, ...data} = createFarmaceuticoDto;
+        const {userData, licencia, id_farmacia} = createFarmaceuticoDto;
         const permisos = 'farmaceutico';
         const user = await this.authService.register({permisos: permisos, ...userData});
         console.log({user});
         try {
+            const farmacia = await this.farmaciaRepository.findOneBy({id_farmacia});
+            if(!farmacia) throw new NotFoundException(`La farmacia a la cual se quizo asignar el farmaceutico no existe`)
             let farmaceutico = this.farmaceuticoRepository.create({
                 cedula: user.cedula,
-                ...data
+                licencia,
+                farmacia: farmacia
             })
             //Al momento de hacer save, validara las llaves foraneas, en caso de 
             //inlfingir con esta saltara al catch y no se hara la creacion del
@@ -73,16 +77,39 @@ export class FarmaciasService {
             this.handlerErrors(error);
         }
     }
-    async consultarMedicamentos(nombre: string){
-        const nombreMed = nombre.toLowerCase();
-        const medicamentos = await this.medicamentoRepositoy.findBy({nombre_med: nombreMed})
-        return {medicamentos};
+    async consultarMedicamentos(term: string){
+
+        if(isUUID(term)){
+            try {
+                const medicamento = await this.medicamentoRepositoy.findOneBy({id_medicamento: term})
+                return medicamento;
+            } catch (error) {
+                throw new BadRequestException(`El medicamento no se encontro en la base de datos`)
+            }
+
+        }else{
+            try {
+                const nombreMed = term.toLowerCase();
+                const medicamentos = await this.medicamentoRepositoy.findBy({nombre_med: nombreMed})
+                return {medicamentos};    
+            } catch (error) {
+                throw new BadRequestException(`El medicamento no se encontro en la base de datos`)
+            }
+
+        }
     }
 
 //Registrar farmacias_medicamentos
     async regLoteStock(farmacia_medicamento: Farmacia_MedicamentoDto){
-        const data = farmacia_medicamento;
-        let registro = this.registroRepositoy.create(data)
+        const {id_farmacia,id_medicamento, ...data} = farmacia_medicamento;
+        const dataMedicamento = await this.medicamentoRepositoy.findOneBy({id_medicamento});
+        const dataFarmacia = await this.farmaciaRepository.findOneBy({id_farmacia})
+        if(!dataMedicamento || !dataFarmacia) throw new NotFoundException(`No se encontro la farmacia o el medicamento a registrar`)
+        let registro = this.registroRepositoy.create({
+            farmacia: dataFarmacia,
+            medicamento: dataMedicamento,
+            ...data
+        })
         try {
             registro = await this.registroRepositoy.save(registro)
             return `Se ha registrado el lote y el stock de manera correcta`;

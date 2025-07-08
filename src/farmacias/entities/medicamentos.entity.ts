@@ -1,5 +1,6 @@
 import { BeforeInsert, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm"
 import { Farmacias_Medicamentos } from "./farm-med.entity";
+import { Adquiere } from "./adquiere.entity";
 
 
 @Entity({schema:'farmacias'})
@@ -30,7 +31,7 @@ export class Medicamentos {
 
     @OneToMany(
         () => Farmacias_Medicamentos,
-        farmacia_medicamento => farmacia_medicamento.id_medicamento,
+        farmacia_medicamento => farmacia_medicamento.medicamento,
             {
             cascade:true,
             eager: true
@@ -42,4 +43,15 @@ export class Medicamentos {
     lowerInsertName(){
         this.nombre_med = this.nombre_med.toLowerCase();
     }
+
+
+    @OneToMany(
+        () => Adquiere,
+        adquiere => adquiere.id_medicamento,
+        {
+            cascade: true,
+            eager: true
+        }
+    )
+    adquiere: Adquiere[]
 }

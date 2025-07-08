@@ -24,11 +24,11 @@ import { DepCariologiaModule } from './dep-cariologia/dep-cariologia.module';
       {
         name: 'usuariosConnection',
         type: 'postgres',
-        host: process.env.DB_HOST,
-        port: +process.env.DB_PORT!,
+        host: process.env.DB_HOSTUSUARIOS,
+        port: +process.env.DB_PORTUSUARIOS!,
         database: process.env.DB_NAMEUSUARIOS,
         username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
+        password: process.env.DB_PASSWORDUSUARIOS,
         autoLoadEntities: true,
         synchronize: true,
       }
@@ -39,13 +39,13 @@ import { DepCariologiaModule } from './dep-cariologia/dep-cariologia.module';
       {
         name: 'farmaciasConnection',
         type: 'postgres',
-        host: process.env.DB_HOST,
-        port: +process.env.DB_PORT!,
+        host: process.env.DB_HOSTFARMACIAS,
+        port: +process.env.DB_PORTFARMACIAS!,
         database: process.env.DB_NAMEFARMACIAS,
         username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
+        password: process.env.DB_PASSWORDFARMACIAS,
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: true
       }
     ),
 
@@ -54,11 +54,11 @@ import { DepCariologiaModule } from './dep-cariologia/dep-cariologia.module';
       {
         name: 'cardiologiConnection',
         type: 'postgres',
-        host: process.env.DB_HOST,
-        port: +process.env.DB_PORT!,
+        host: process.env.DB_HOSTDEPTOCARDIO,
+        port: +process.env.DB_PORTDEPTOCARDIO!,
         database: process.env.DB_NAMEDEPCARDI,
         username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
+        password: process.env.DB_PASSWORDDEPTOCARDIO,
         autoLoadEntities: true,
         synchronize: true,
       }
