@@ -47,7 +47,7 @@ export class EmpleadosService {
       admin = await this.adminRepository.save(admin);
       console.log(admin);
       
-      return `Registro exitoso del nuevo empleado, su id es: ${admin.id_empleado}`; 
+      return admin; 
 
     } catch (error) {
       
