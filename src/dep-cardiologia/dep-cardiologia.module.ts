@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { DepCariologiaService } from './dep-cariologia.service';
-import { DepCariologiaController } from './dep-cariologia.controller';
+import { DepcardiologiaService } from './dep-cardiologia.service';
+import { DepcardiologiaController } from './dep-cardiologia.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Agendas, Cardiologos, Citas, Consultas, Prescripciones } from './entities';
 import { Prescripciones_Medicamentos } from './entities/pres-medic.entity';
@@ -11,8 +11,8 @@ import { PacientesModule } from 'src/pacientes/pacientes.module';
 import { FarmaciasModule } from 'src/farmacias/farmacias.module';
 
 @Module({
-  controllers: [DepCariologiaController],
-  providers: [DepCariologiaService],
+  controllers: [DepcardiologiaController],
+  providers: [DepcardiologiaService],
   imports: [
     AuthModule,
     EmpleadosModule,
@@ -30,5 +30,5 @@ import { FarmaciasModule } from 'src/farmacias/farmacias.module';
 
   ]
 })
-export class DepCariologiaModule {}
+export class DepcardiologiaModule {}
  

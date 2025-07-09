@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateEmpleadoMedicoDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -105,6 +105,31 @@ export class EmpleadosService {
     //No es necesario poner un trycatch porque la cedula que se le pasa al argumento
     //es la misma que la del admnistrador que se encuentra con la sesion activa.
     const data = await this.empleadoRepository.findOneBy({cedula})
+    if(!data) throw new BadRequestException(`No se encontro informaciondel empleado admnistrativo identificado con CC: ${cedula}`)
     return data?.id_empleado;
+  }
+
+  async consultarMedicos(){
+    const medicos = await this.medicoRepository
+    .createQueryBuilder('medico')
+    .leftJoin('medico.empleado', 'empleado')
+    .leftJoin('empleado.usuario', 'usuario')
+    .select([
+        'usuario.nombre',
+        'usuario.cedula',
+        'empleado.id_empleado',
+        'medico.departamento'
+    ])
+    .getRawMany();
+    return medicos
+  }
+
+  async getMedico(cedula:string){
+    const medico = await this.empleadoRepository
+      .createQueryBuilder('empleado')
+      .leftJoinAndSelect('empleado.medico', 'medico')
+      .where('empleado.cedula = :cedula', {cedula})
+      .getRawOne()
+      return medico;
   }
 }

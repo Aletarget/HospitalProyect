@@ -11,6 +11,9 @@ export class Adquiere{
     @Column('text')
     cedula: string;
 
+    @Column('uuid')
+    id_medicamento: string
+
     @ManyToOne(
         () => Medicamentos,
         medicamento => medicamento.adquiere,{
@@ -18,7 +21,10 @@ export class Adquiere{
         }
     )
     @JoinColumn({name:'id_medicamento'})
-    id_medicamento: Medicamentos;
+    medicamento: Medicamentos;
+
+    @Column('integer')
+    id_farmacia: number;
 
     @ManyToOne(
         () => Farmacias,
@@ -27,13 +33,13 @@ export class Adquiere{
         }
     )
     @JoinColumn({name:'id_farmacia'})
-    id_farmacia: Farmacias;
+    farmacia: Farmacias;
 
     @Column('time')
     hora: string;
 
     @Column('date')
-    fecha: string;
+    fecha: Date;
 
     @Column('decimal', {precision: 10, scale:2})
     precio_total: number;

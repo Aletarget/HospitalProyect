@@ -2,10 +2,11 @@ import { BadRequestException, Injectable, InternalServerErrorException, Logger, 
 import { CreateFarmaciaDto } from './dto/create-farmacia.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Farmaceuticos, Farmacias, Farmacias_Medicamentos, Medicamentos } from './entities';
+import { Adquiere, Farmaceuticos, Farmacias, Farmacias_Medicamentos, Medicamentos } from './entities';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateFarmaceuticoDto, CreateMedicamentoDto, Farmacia_MedicamentoDto } from './dto';
 import { isUUID } from 'class-validator';
+import { CreateCompraDto } from './dto/create-compra.dto';
 
 @Injectable()
 export class FarmaciasService {
@@ -24,6 +25,9 @@ export class FarmaciasService {
 
     @InjectRepository(Farmacias_Medicamentos, 'farmaciasConnection')
     private readonly registroRepositoy: Repository<Farmacias_Medicamentos>,
+
+    @InjectRepository(Adquiere, 'farmaciasConnection')
+    private readonly compraRepository: Repository<Adquiere>,
 
     private readonly authService: AuthService,
         
@@ -45,7 +49,7 @@ export class FarmaciasService {
     async createFarmaceutico(createFarmaceuticoDto : CreateFarmaceuticoDto){
         const {userData, licencia, id_farmacia} = createFarmaceuticoDto;
         const permisos = 'farmaceutico';
-        const user = await this.authService.register({permisos: permisos, ...userData});
+        const user = await this.authService.register({...userData, permisos: permisos});
         console.log({user});
         try {
             const farmacia = await this.farmaciaRepository.findOneBy({id_farmacia});
@@ -86,7 +90,6 @@ export class FarmaciasService {
             } catch (error) {
                 throw new BadRequestException(`El medicamento no se encontro en la base de datos`)
             }
-
         }else{
             try {
                 const nombreMed = term.toLowerCase();
@@ -124,4 +127,39 @@ export class FarmaciasService {
         throw new BadRequestException(error.message);
     }
 
+
+    async adquiere(createCompraDto: CreateCompraDto){
+        const {nombre_farmacia,id_medicamento,...dataCompra} = createCompraDto;
+        const medicamento = await this.medicamentoRepositoy.findOneBy({id_medicamento})
+
+        if(!medicamento) throw new BadRequestException(`Medicamento no encontrado`)
+        
+        const farmacia = await this.farmaciaRepository.findOneBy({nombre:nombre_farmacia})
+        if(!farmacia) throw new BadRequestException(`Farmacia no encontrada`)
+
+        const now = new Date();
+        const hora = now.getHours().toString().padStart(2, '0') + now.getMinutes().toString().padStart(2, '0');
+        const fecha = now.getFullYear().toString() + '-' +
+              (now.getMonth() + 1).toString().padStart(2, '0') + '-' +
+              now.getDate().toString().padStart(2, '0');
+        const fechaDate = new Date(fecha);
+        let compra = this.compraRepository.create({
+            precio_total: (medicamento.precio*dataCompra.cantidad),
+            hora: hora,
+            id_farmacia: farmacia.id_farmacia,
+            id_medicamento: medicamento.id_medicamento,
+            fecha: fechaDate,
+            farmacia: farmacia,
+            medicamento: medicamento,
+            ...dataCompra
+        })
+        console.log({compra})
+        try {
+            compra = await this.compraRepository.save(compra);
+            return compra;
+        } catch (error) {
+            this.logger.log(error.detail)
+            throw new InternalServerErrorException(`Ha ocurrido un error: ${error.message}`);
+        }
+    }
 }

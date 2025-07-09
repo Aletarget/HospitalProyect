@@ -37,12 +37,10 @@
   </style>
 </head>
 <body>
-  <h1>Paciente - Área Personal</h1>
+  <h1>Farmaceutico - Área Personal</h1>
   <div class="btn-container">
-    <button onclick="location.href='#'">Consultar Citas</button>
-    <button onclick="location.href='#'">Compra de Medicamentos</button>
-    <button onclick="historial()">Consultar Historial Clinico</button>
-    <button onclick="location.href='#'">Consultar Prescripción</button>
+    <button onclick="location.href='#'">Consultar Medicamentos</button>
+    <button onclick="location.href='#'">Registrar Lote y Stock</button>
     <div class="info"></div>
     <div class="info">
     </div>
@@ -72,7 +70,7 @@
             
             const data = await response.json();
             // Validación de permisos
-            if (data.permisos != 'user') {
+            if (data.permisos != 'farmaceutico') {
                 alert('No tienes permisos para acceder a esta página');
                 window.location.href = '../index.html';
                 return;
@@ -86,48 +84,6 @@
         }
     })();
 
-        async function historial() {
-            const cedula = cedulaUsuario;
-            const infoDiv = document.querySelector('.info');
-
-            try {
-            const response = await fetch(`http://localhost:3000/pacientes/histClinic/${cedula}`,
-            {method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }});
-            
-            if (!response.ok) {
-                throw new Error('No se encontró historial clínico');
-            }
-
-            const data = await response.json();
-            console.log(data)
-            // Mostrar los datos en el div
-            infoDiv.innerHTML = `
-                <h2><b>Historial Clínico</h2>
-                <p><strong>ID Historial:</strong> ${data.id_historial}</p>
-                <p><strong>Fecha de inicio:</strong> ${data.fecha_inicio}</p>
-                <h2><b>Paciente</h2>
-                <p><strong>Cédula:</strong> ${data.paciente.cedula}</p>
-                <p><strong>Fecha de nacimiento:</strong> ${data.paciente.fecha_nac}</p>
-                
-                <h4>Registros:</h4>
-                <ul>
-                ${data.registro.map(r => `
-                    <li>
-                    <strong>Fecha:</strong> ${r.fecha}<br>
-                    <strong>Descripción:</strong> ${r.descripcion}
-                    </li>
-                `).join('')}
-                </ul>
-            `;
-
-            } catch (err) {
-            infoDiv.innerHTML = `<p style="color:red;">${err.message}</p>`;
-            }
-        }
     </script>
 </body>
 </html>

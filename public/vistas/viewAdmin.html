@@ -41,8 +41,14 @@
   <div class="btn-container">
     <button onclick="location.href='#'">Agendar Citas</button>
     <button onclick="location.href='#'">Consultar Agendas de Médicos</button>
+    <button onclick="location.href='#'">Crear Agendas para médicos</button>
     <button onclick="location.href='#'">Registrar Nuevo Paciente</button>
-    <button onclick="location.href='#'">Registrar Nuevo Empleado</button>
+    <button onclick="location.href='#'">Registrar Nuevo Medico</button>
+    <button onclick="location.href='#'">Registrar Nuevo Admnistrador</button>
+    <button onclick="location.href='#'">Registrar Nuevo Farmaceutico</button>
+    <button onclick="location.href='#'">Registrar Medicamentos</button>
+    <button onclick="location.href='#'">Registrar Farmacias</button>
+    <button onclick="location.href='#'">Consultar Farmacias</button>
   </div>
   <script>
 
@@ -66,7 +72,7 @@
             
             const data = await response.json();
             // Validación de permisos
-            if (data.permisos != 'admin') {
+            if (data.permisos != 'admin' &&  data.permisos != 'super-user') {
                 alert('No tienes permisos para acceder a esta página');
                 window.location.href = '../index.html';
                 return;

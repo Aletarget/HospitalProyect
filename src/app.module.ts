@@ -7,7 +7,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { PacientesModule } from './pacientes/pacientes.module';
 import { FarmaciasModule } from './farmacias/farmacias.module';
-import { DepCariologiaModule } from './dep-cariologia/dep-cariologia.module';
+import { DepcardiologiaModule } from './dep-cardiologia/dep-cardiologia.module';
 
 @Module({
   imports: [
@@ -31,6 +31,7 @@ import { DepCariologiaModule } from './dep-cariologia/dep-cariologia.module';
         password: process.env.DB_PASSWORDUSUARIOS,
         autoLoadEntities: true,
         synchronize: true,
+        ssl: { rejectUnauthorized: false }
       }
     ),
 
@@ -72,7 +73,7 @@ import { DepCariologiaModule } from './dep-cariologia/dep-cariologia.module';
 
     FarmaciasModule,
 
-    DepCariologiaModule],
+    DepcardiologiaModule],
   controllers: [],
   providers: [],
 })

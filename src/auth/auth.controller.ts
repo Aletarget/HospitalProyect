@@ -27,7 +27,7 @@ export class AuthController {
   }
 
   @Get()
-  @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.user, permisosValidos.superUser)
+  @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.farmaceutico ,permisosValidos.user, permisosValidos.superUser)
   getUser(@Request() req){
     console.log(req.user)
     return {permisos: req.user.permisos, cedula: req.user.cedula, id: req.user.id_empleado};

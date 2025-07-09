@@ -10,9 +10,10 @@ import { PacientesService } from 'src/pacientes/pacientes.service';
 import { Actualiza } from './entities/actualiza.entity';
 import { FarmaciasService } from 'src/farmacias/farmacias.service';
 import { Medicamentos } from 'src/farmacias/entities';
+import { isUUID } from 'class-validator';
 
 @Injectable()
-export class DepCariologiaService {
+export class DepcardiologiaService {
     private logger = new Logger('DepartCardiologia')
 
     constructor(
@@ -60,7 +61,7 @@ export class DepCariologiaService {
     }
     
     async createAgenda(createAgendaDto: createAgendaDto){
-        const data = createAgendaDto;
+        const {id_empleado, ...data} = createAgendaDto;
         
         if(data.hora_fin < data.hora_inicio){
             throw new BadRequestException(`Ha digitado un horario donde la hora de inicio es despues de la hora de finalizacion de la agenda`)
@@ -90,11 +91,17 @@ export class DepCariologiaService {
                 `Ya existe una agenda que se traslapa con el intervalo [${data.hora_inicio}, ${data.hora_fin}] en la fecha ${data.fecha}`
             )
             }
+        const cardiologo = await this.cardiologoRepository.findOneBy({id_empleado})
+        if(!cardiologo) throw new BadRequestException(`El cargiologo al cual quiere asingarle la agenda no exite`)
         
-        const agenda = this.agendaRepository.create({})
+        const agenda = this.agendaRepository.create(
+            {
+                cardiologo,
+                ...data,
+            })
         try {
             await this.agendaRepository.save(agenda)
-            return `La se ha creado con exito`
+            return `La agenda se ha creado con exito`
         } catch (error) {
             this.logger.log(error.detail)
             throw new BadRequestException(error.message)
@@ -227,5 +234,84 @@ export class DepCariologiaService {
     async consultarPrescripciones(cedula:string){
         const prescripciones = await this.prescripcionRepository.findBy({id_paciente: cedula})
         return prescripciones
+    }
+
+    async consultarAgenda(term?: string) {
+        // Si se envía un parámetro (puede ser un UUID o una cédula)
+        if (term) {
+            if (isUUID(term)) {
+                const agendas = await this.agendaRepository
+                    .createQueryBuilder('agendas')
+                    .leftJoinAndSelect('agendas.cardiologo', 'cardiologo')
+                    .leftJoinAndSelect('agendas.cita', 'cita')
+                    .where('agendas.cardiologo = :id_cardiologo', { id_cardiologo: term })
+                    .select(
+                        [
+                        'agendas.id_agenda',
+                        'agendas.estado',
+                        'agendas.hora_inicio',
+                        'agendas.hora_fin',
+                        'agendas.fecha',
+                        'agendas.id_empleado as agendas_id_empleado',
+                        'cita.id_cita'
+                        ]
+                    )
+                    .getRawMany();
+
+                if (!agendas || agendas.length === 0)
+                    return `El médico con ID: ${term} no cuenta con agendas hasta la fecha`;
+
+                return agendas;
+            } else {
+                const medico = await this.empleadosService.getMedico(term); // term es cédula
+                const agendas = await this.agendaRepository
+                    .createQueryBuilder('agendas')
+                    .leftJoinAndSelect('agendas.cardiologo', 'cardiologo')
+                    .leftJoinAndSelect('agendas.cita', 'cita')
+                    .where('agendas.cardiologo = :id_cardiologo', { id_cardiologo: medico.empleado_id_empleado })
+                    .select(
+                        [
+                        'agendas.id_agenda',
+                        'agendas.estado',
+                        'agendas.hora_inicio',
+                        'agendas.hora_fin',
+                        'agendas.fecha',
+                        'agendas.id_empleado as agendas_id_empleado',
+                        'cita.id_cita'
+                        ]
+                    )
+                    .getRawMany();
+
+                if (!agendas || agendas.length === 0)
+                    return `El médico con cédula: ${term} no cuenta con agendas hasta la fecha`;
+
+                return agendas;
+            }
+        }
+
+        // Si no se pasa parámetro, retorna todas las agendas
+        const agendas = await this.agendaRepository
+        .createQueryBuilder('agendas')
+        .leftJoinAndSelect('agendas.cita', 'cita')
+        .select(
+            [
+            'agendas.id_agenda',
+            'agendas.estado',
+            'agendas.hora_inicio',
+            'agendas.hora_fin',
+            'agendas.fecha',
+            'agendas.id_empleado as agendas_id_empleado',
+            'cita.id_cita'
+            ]
+            )
+        .getRawMany()
+        return agendas;
+    }
+
+    async getCitas(cedula: string){
+        const citas = await this.citaRepositoty
+            .createQueryBuilder('citas')
+            .getRawMany()
+        return citas
     }
 }

@@ -3,6 +3,7 @@ import { FarmaciasService } from './farmacias.service';
 import { Auth } from 'src/auth/decorators/auth-user.decorator';
 import { permisosValidos } from 'src/auth/interfaces/jwt-payload/permisos-validos';
 import { CreateFarmaceuticoDto, CreateFarmaciaDto, CreateMedicamentoDto, Farmacia_MedicamentoDto,  } from './dto';
+import { CreateCompraDto } from './dto/create-compra.dto';
 
 @Controller('farmacias')
 export class FarmaciasController {
@@ -37,5 +38,11 @@ export class FarmaciasController {
   @Auth(permisosValidos.medico, permisosValidos.farmaceutico, permisosValidos.superUser)
   consultarMedicamentos(@Param('nombre') nombre: string){
     return this.farmaciasService.consultarMedicamentos(nombre);
+  }
+
+  @Post('compraMedicamento')
+  @Auth(permisosValidos.user)
+  compraMedicamento(createCompraDto: CreateCompraDto){
+    return this.farmaciasService.adquiere(createCompraDto);
   }
 }

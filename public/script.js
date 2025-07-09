@@ -44,6 +44,12 @@ loginForm.addEventListener('submit', async function (e) {
             case 'user':
             window.location.href = './vistas/viewUsers.html';
             break;
+            case 'super-user':
+            window.location.href = './vistas/viewAdmin.html';
+            break;
+            case 'farmaceutico':
+            window.location.href = './vistas/viewFarmaceutico.html';
+            break;
             default:
             alert('Permiso no reconocido');
         }

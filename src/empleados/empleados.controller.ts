@@ -23,4 +23,10 @@ export class EmpleadosController {
     @Body() createEmpleadoMedicoDto: CreateEmpleadoMedicoDto) {
     return this.empleadosService.createMedico(createEmpleadoMedicoDto);
   }
+
+  @Get('getMedicos')
+  @Auth(permisosValidos.admin, permisosValidos.superUser)
+  getMedicos(){
+    return this.empleadosService.consultarMedicos();
+  }
 }
