@@ -13,8 +13,9 @@ async function bootstrap() {
     }) 
   );
   app.enableCors({
-    origin: 'http://127.0.0.1:5500', // o usa '*' para permitir todos (solo en desarrollo)
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    origin: ['http://localhost:3000'], // permite peticiones desde React
+    methods: 'GET,POST,PUT,DELETE,OPTIONS',
+    credentials: true
   });
   await app.listen(process.env.PORT ?? 3000);
 }
