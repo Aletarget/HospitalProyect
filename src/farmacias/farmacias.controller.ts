@@ -42,7 +42,7 @@ export class FarmaciasController {
 
   @Post('compraMedicamento')
   @Auth(permisosValidos.user)
-  compraMedicamento(createCompraDto: CreateCompraDto){
+  compraMedicamento(@Body() createCompraDto: CreateCompraDto){
     return this.farmaciasService.adquiere(createCompraDto);
   }
 }
