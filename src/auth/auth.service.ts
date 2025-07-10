@@ -117,7 +117,7 @@ export class AuthService {
       user.password = bcrypt.hashSync(newPassword, 10);
       console.log(user);
       await this.userRepository.save(user);
-      return `Ok`
+      return {updatePassword: true}
     } catch (error) {
       this.logger.error(error?.detail || error);
       throw new InternalServerErrorException('Ocurrió un error al cambiar la contraseña.');
