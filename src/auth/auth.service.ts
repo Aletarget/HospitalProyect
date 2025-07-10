@@ -97,9 +97,9 @@ export class AuthService {
       const user = await this.userRepository
         .createQueryBuilder('usuario')
         .where('usuario.cedula = :cedula', { cedula })
-        .andWhere('usuario.fecha_expedicion = :fecha_expedicion', { fecha_expedicion })
+        .andWhere('DATE(usuario.fecha_expedicion) = DATE(:fecha_expedicion)', { fecha_expedicion })
         .getOne();
-
+      console.log(user)
       if (!user) {
         throw new BadRequestException('Usuario no encontrado. Verifique los datos ingresados.');
       }
@@ -109,16 +109,17 @@ export class AuthService {
         .where('tele.telefono = :telefono', { telefono })
         .andWhere('tele.cedula = :cedula', { cedula })
         .getOne();
-
+      console.log(telefonoFind)
       if (!telefonoFind) {
         throw new BadRequestException('Teléfono no registrado o no coincide con el usuario.');
       }
 
-      user.password = await bcrypt.hash(newPassword, 10);
+      user.password = bcrypt.hashSync(newPassword, 10);
+      console.log(user);
       await this.userRepository.save(user);
-
+      return `Ok`
     } catch (error) {
-      this.logger.error(error?.detail || error.message);
+      this.logger.error(error?.detail || error);
       throw new InternalServerErrorException('Ocurrió un error al cambiar la contraseña.');
     }
   }
