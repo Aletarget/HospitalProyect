@@ -177,7 +177,10 @@ export class FarmaciasService {
 
         if(!medicamento) throw new BadRequestException(`Medicamento no encontrado`)
         
-        const farmacia = await this.farmaciaRepository.findOneBy({nombre:nombre_farmacia})
+        const farmacia = await this.farmaciaRepository
+            .createQueryBuilder('farma')
+            .where('LOWER(TRIM(farma.nombre) = LOWER(TRIM(:nombre_farmacia)',{nombre_farmacia})
+            .getOne()
         if(!farmacia) throw new BadRequestException(`Farmacia no encontrada`)
 
         const now = new Date();
