@@ -62,6 +62,11 @@ export class Usuarios {
     password: string;
 
 
+    @Column('date',{
+        nullable: true
+    })
+    fecha_expedicion: Date
+
     @OneToMany(
         () => Telefonos,
         telefonos => telefonos.cedula,

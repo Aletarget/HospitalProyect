@@ -1,4 +1,5 @@
-import { ArrayMaxSize, IsArray, IsBoolean, IsEmail, IsIn, IsOptional, IsString, Length, MinLength } from "class-validator";
+import { Type } from "class-transformer";
+import { ArrayMaxSize, IsArray, IsBoolean, IsDate, IsEmail, IsIn, IsOptional, IsString, Length, MinLength } from "class-validator";
 
 export class CreateUserDto {
 
@@ -38,5 +39,8 @@ export class CreateUserDto {
     @ArrayMaxSize(2)
     telefonos: string[];
     
+    @IsDate()
+    @Type(() => Date)
+    fecha_expedicion: Date;
 
 }

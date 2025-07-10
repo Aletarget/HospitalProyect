@@ -13,7 +13,7 @@ async function bootstrap() {
     }) 
   );
   app.enableCors({
-    origin: ['http://localhost:3000'], // permite peticiones desde React
+    origin: ['http://localhost:3000', 'http://192.168.1.62:3000'], // permite peticiones desde React
     methods: 'GET,POST,PUT,DELETE,OPTIONS',
     credentials: true
   });

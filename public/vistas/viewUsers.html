@@ -60,7 +60,7 @@
             return;
         }
         try {
-            const response = await fetch('http://localhost:3000/auth', {
+            const response = await fetch('https://hospitalproyect-production.up.railway.app/auth', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -91,7 +91,7 @@
             const infoDiv = document.querySelector('.info');
 
             try {
-            const response = await fetch(`http://localhost:3000/pacientes/histClinic/${cedula}`,
+            const response = await fetch(`https://hospitalproyect-production.up.railway.app/pacientes/histClinic/${cedula}`,
             {method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

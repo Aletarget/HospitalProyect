@@ -1,4 +1,4 @@
-import {  BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {  BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
@@ -12,10 +12,11 @@ import { CreateUserDto } from './dto/createUser.dto';
 import { Telefonos } from './entities/telefonos.entity';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { JwtPayload } from './interfaces/jwt-payload/jwt-payload.interface';
+import { UpdatePasswordDto } from './dto/updatePassword.dto';
 
 @Injectable()
 export class AuthService {
-
+  private logger = new Logger('AuthService');
   constructor(
     @InjectRepository(Usuarios, 'usuariosConnection')
     private readonly userRepository: Repository<Usuarios>,
@@ -88,4 +89,38 @@ export class AuthService {
     }
     return user;
   }
+
+  async changePassword(updatePasswordDto: UpdatePasswordDto) {
+    const { cedula, fecha_expedicion, telefono, newPassword } = updatePasswordDto;
+
+    try {
+      const user = await this.userRepository
+        .createQueryBuilder('usuario')
+        .where('usuario.cedula = :cedula', { cedula })
+        .andWhere('usuario.fecha_expedicion = :fecha_expedicion', { fecha_expedicion })
+        .getOne();
+
+      if (!user) {
+        throw new BadRequestException('Usuario no encontrado. Verifique los datos ingresados.');
+      }
+
+      const telefonoFind = await this.phoneRepository
+        .createQueryBuilder('tele')
+        .where('tele.telefono = :telefono', { telefono })
+        .andWhere('tele.cedula = :cedula', { cedula })
+        .getOne();
+
+      if (!telefonoFind) {
+        throw new BadRequestException('Teléfono no registrado o no coincide con el usuario.');
+      }
+
+      user.password = await bcrypt.hash(newPassword, 10);
+      await this.userRepository.save(user);
+
+    } catch (error) {
+      this.logger.error(error?.detail || error.message);
+      throw new InternalServerErrorException('Ocurrió un error al cambiar la contraseña.');
+    }
+  }
+
 }

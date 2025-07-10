@@ -26,7 +26,7 @@ loginForm.addEventListener('submit', async function (e) {
         const payload = jwt_decode(token);
         const permisos = payload.permisos; // Este debe coincidir con el campo que pusiste en el backend al firmar el token
         const activo = payload.estado;
-        
+        localStorage.setItem('cedula', payload.cedula)
         if(!activo){
             alert(`El usuario actualmente se encuentra inactivo, favor comunicarse con un administrativo`)
             return;

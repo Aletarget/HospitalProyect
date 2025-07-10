@@ -4,6 +4,7 @@ import { CreateUserDto } from './dto/createUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { permisosValidos } from './interfaces/jwt-payload/permisos-validos';
 import { Auth } from './decorators/auth-user.decorator';
+import { UpdatePasswordDto } from './dto/updatePassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -31,6 +32,12 @@ export class AuthController {
   getUser(@Request() req){
     console.log(req.user)
     return {permisos: req.user.permisos, cedula: req.user.cedula, id: req.user.id_empleado};
+  }
+
+  @Post('cambioOlvidoPassword')
+  @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.farmaceutico, permisosValidos.user, permisosValidos.superUser)
+  changePassword(@Body() updatePasswordDto: UpdatePasswordDto){
+    return this.authService.changePassword(updatePasswordDto);
   }
 
 }
