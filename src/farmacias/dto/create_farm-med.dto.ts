@@ -1,4 +1,4 @@
-import { IsPositive, IsString, IsUUID } from "class-validator";
+import { IsPositive, isString, IsString, IsUUID } from "class-validator";
 
 
 
@@ -14,5 +14,8 @@ export class Farmacia_MedicamentoDto{
     lote:string;
 
     @IsPositive()
-    stock: number
+    stock: number;
+
+    @IsString()
+    cedula: string;
 }

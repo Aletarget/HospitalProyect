@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
 
 
 import { DepcardiologiaService } from './dep-cardiologia.service';
@@ -60,5 +60,17 @@ export class DepcardiologiaController {
     @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.superUser)
     getAgendas() {
       return this.depcardiologiaService.consultarAgenda(); // sin argumentos
+    }
+
+    @Get('getCitas/:cedula')
+    @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.superUser)
+    getCitas(@Param('cedula') cedula: string) {
+      return this.depcardiologiaService.getCitas(cedula); // sin argumentos
+    }
+
+    @Get('getCitasMed/:id')
+    @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.superUser)
+    getCitasMedicos(@Param('id', ParseUUIDPipe) id: string) {
+      return this.depcardiologiaService.getCitasMedico(id); // sin argumentos
     }
 }

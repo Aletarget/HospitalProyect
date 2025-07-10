@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateFarmaciaDto } from './dto/create-farmacia.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -36,13 +36,20 @@ export class FarmaciasService {
     async createFarmacia(createFarmaciaDto: CreateFarmaciaDto){
         const data = createFarmaciaDto;
         console.log(data);
+        const farmaciaExistente = await this.farmaciaRepository
+            .createQueryBuilder('farm')
+            .where(`LOWER(TRIM(farm.nombre)) = LOWER(TRIM(:nombre))`, { nombre: data.nombre })
+            .getOne();
+
+        if(farmaciaExistente) throw new BadRequestException(`Ya existe una farmacia con ese nombre, vuelvalo a intentar`)
+
         let farmacia = this.farmaciaRepository.create(data);
         try {
             await this.farmaciaRepository.save(farmacia);
-            return `Se ha registrado la farmacia correctamente`;
+            return {ok: true};
         } catch (error) {
             this.logger.log(`Error al crear la farmacia: ${error.detail}`);
-            throw new InternalServerErrorException(error.message);
+            throw new InternalServerErrorException(error);
         }
     }   
 //Registrar un nuevo farmaceutico
@@ -63,7 +70,7 @@ export class FarmaciasService {
             //inlfingir con esta saltara al catch y no se hara la creacion del
             //farmaceutico ni de su correpondiente usuario
             farmaceutico = await this.farmaceuticoRepository.save(farmaceutico);
-            return `Se ha registrado el farmaceutico correctamente`;
+            return {ok: true};
         } catch (error) {
             await this.authService.delete(userData.cedula);
             this.handlerErrors(error);
@@ -73,41 +80,77 @@ export class FarmaciasService {
 //Registrar un nuevo medicamento
     async createMedicamento(createMedicamentoDto: CreateMedicamentoDto){
         const data = createMedicamentoDto;
+        const medicamentoExistente = await this.medicamentoRepositoy
+            .createQueryBuilder('medicamento')
+            .where('LOWER(TRIM(medicamento.nombre_med)) = LOWER(TRIM(:nombre))', { nombre: data.nombre_med })
+            .andWhere('LOWER(TRIM(medicamento.concentracion)) = LOWER(TRIM(:concentracion))', { concentracion: data.concentracion })
+            .andWhere('LOWER(TRIM(medicamento.presentacion)) = LOWER(TRIM(:presentacion))', { presentacion: data.presentacion })
+            .getOne();
+        if(medicamentoExistente) throw new BadRequestException(`Ya existe un medicamento con nombre : ${data.nombre_med}, concentracion: ${data.concentracion} y presentacion: ${data.presentacion}`)
         let medicamento = this.medicamentoRepositoy.create(data);
         try {
             medicamento = await this.medicamentoRepositoy.save(medicamento);
-            return `Se ha registrado el medicamento correctamente`;
+            return {ok: true};
         } catch (error) {
             this.handlerErrors(error);
         }
     }
-    async consultarMedicamentos(term: string){
+    async consultarMedicamentos(term?: string) {
+        try {
+            // Si es UUID => búsqueda por ID
+            if (term && isUUID(term)) {
+            console.log(`es uuid`)
+            const medicamento = await this.medicamentoRepositoy.findOneBy({ id_medicamento: term });
 
-        if(isUUID(term)){
-            try {
-                const medicamento = await this.medicamentoRepositoy.findOneBy({id_medicamento: term})
-                return medicamento;
-            } catch (error) {
-                throw new BadRequestException(`El medicamento no se encontro en la base de datos`)
-            }
-        }else{
-            try {
-                const nombreMed = term.toLowerCase();
-                const medicamentos = await this.medicamentoRepositoy.findBy({nombre_med: nombreMed})
-                return {medicamentos};    
-            } catch (error) {
-                throw new BadRequestException(`El medicamento no se encontro en la base de datos`)
+            if (!medicamento) {
+                throw new NotFoundException("El medicamento no se encontró en la base de datos");
             }
 
+            return [medicamento]; // Devuelve como array
+            }
+
+            // Si hay término => búsqueda por nombre
+            if (term) {
+            const nombreMed = `%${term.toLowerCase().trim()}%`;
+
+            const medicamentos = await this.medicamentoRepositoy
+                .createQueryBuilder('medicamento')
+                .where('LOWER(TRIM(medicamento.nombre_med)) LIKE :nombreMed', { nombreMed })
+                .getMany();
+
+            if (medicamentos.length === 0) {
+                throw new NotFoundException(`No se encontraron medicamentos con el nombre ${term}`);
+            }
+            console.log(medicamentos);
+            return medicamentos;
+            }
+
+            // Si no hay término => devolver todos los medicamentos
+            const todos = await this.medicamentoRepositoy.find();
+            return todos;
+
+        } catch (error) {
+            this.logger.error('Error en consultarMedicamentos', error);
+            throw new InternalServerErrorException("Ocurrió un error al consultar medicamentos");
         }
     }
 
 //Registrar farmacias_medicamentos
     async regLoteStock(farmacia_medicamento: Farmacia_MedicamentoDto){
-        const {id_farmacia,id_medicamento, ...data} = farmacia_medicamento;
+        const {id_farmacia,id_medicamento, cedula,...data} = farmacia_medicamento;
+        const existeRegistro = await this.registroRepositoy.findOneBy({lote:data.lote})
+        if(existeRegistro) throw new BadRequestException(`Este lote ya fue registrado`)
         const dataMedicamento = await this.medicamentoRepositoy.findOneBy({id_medicamento});
         const dataFarmacia = await this.farmaciaRepository.findOneBy({id_farmacia})
         if(!dataMedicamento || !dataFarmacia) throw new NotFoundException(`No se encontro la farmacia o el medicamento a registrar`)
+        
+        const validar = await this.farmaceuticoRepository
+            .createQueryBuilder('farmaceutico')
+            .where('farmaceutico.id_farmacia = :id_farmacia',{id_farmacia})
+            .andWhere('farmaceutico.cedula = :cedula', {cedula})
+            .getOne()
+        if(validar) throw new BadRequestException (`Solo puede registrar lote y stock de la farmacia a la cual fue asignado`)
+
         let registro = this.registroRepositoy.create({
             farmacia: dataFarmacia,
             medicamento: dataMedicamento,
@@ -115,7 +158,7 @@ export class FarmaciasService {
         })
         try {
             registro = await this.registroRepositoy.save(registro)
-            return `Se ha registrado el lote y el stock de manera correcta`;
+            return {ok: true};
         } catch (error) {
             this.handlerErrors(error);
         }
@@ -160,6 +203,24 @@ export class FarmaciasService {
         } catch (error) {
             this.logger.log(error.detail)
             throw new InternalServerErrorException(`Ha ocurrido un error: ${error.message}`);
+        }
+    }
+
+    async consultarFarmacia(nombre?: string){
+        if(nombre){
+            const nombreFarma = nombre.trim().toLowerCase()
+
+            const farmacia = await this.farmaciaRepository
+            .createQueryBuilder('farma')
+            .where('LOWER(TRIM(farma.nombre)) = LOWER(TRIM(:nombre))', { nombre: nombreFarma.trim().toLowerCase() })
+            .orWhere('LOWER(farma.nombre) LIKE :likeNombre', { likeNombre: `%${nombreFarma.trim().toLowerCase()}%` })
+            .getOne();
+
+            if(!farmacia) throw new BadRequestException(`La farmacia con el nombre ${nombre} no fue encontrada`)
+            return [farmacia];
+        }else{
+            const farmacias = await this.farmaciaRepository.find()
+            return farmacias;
         }
     }
 }

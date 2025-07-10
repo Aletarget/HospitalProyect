@@ -24,9 +24,20 @@ export class EmpleadosController {
     return this.empleadosService.createMedico(createEmpleadoMedicoDto);
   }
 
-  @Get('getMedicos')
+  @Get('getMedicos/:cedula')
   @Auth(permisosValidos.admin, permisosValidos.superUser)
-  getMedicos(){
+  getMedicos(@Param('cedula') cedula: string){
+    return this.empleadosService.consultarMedicos(cedula);
+  }
+  @Get('getMedicos/')
+  @Auth(permisosValidos.admin, permisosValidos.superUser)
+  getAllMedicos(){
     return this.empleadosService.consultarMedicos();
+  }
+
+  @Get('getId/:cedula')
+  @Auth(permisosValidos.admin, permisosValidos.superUser, permisosValidos.medico)
+  getIdEmpleado(@Param('cedula') cedula: string){
+    return this.empleadosService.consultarId(cedula);
   }
 }

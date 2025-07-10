@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { FarmaciasService } from './farmacias.service';
 import { Auth } from 'src/auth/decorators/auth-user.decorator';
 import { permisosValidos } from 'src/auth/interfaces/jwt-payload/permisos-validos';
@@ -39,10 +39,27 @@ export class FarmaciasController {
   consultarMedicamentos(@Param('nombre') nombre: string){
     return this.farmaciasService.consultarMedicamentos(nombre);
   }
+  @Get('medicamento')
+  @Auth(permisosValidos.medico, permisosValidos.farmaceutico, permisosValidos.superUser)
+  consultarMedicamentosNoName(){
+    return this.farmaciasService.consultarMedicamentos();
+  }
+
 
   @Post('compraMedicamento')
   @Auth(permisosValidos.user)
   compraMedicamento(@Body() createCompraDto: CreateCompraDto){
     return this.farmaciasService.adquiere(createCompraDto);
+  }
+
+  @Get('consultarFarmacia/:nombre')
+  @Auth(permisosValidos.user, permisosValidos.admin, permisosValidos.superUser)
+  consultarFarmacias(@Param('nombre') nombre?: string){
+    return this.farmaciasService.consultarFarmacia(nombre);
+  }
+  @Get('consultarFarmacia')
+  @Auth(permisosValidos.user, permisosValidos.admin, permisosValidos.superUser)
+  consultarFarmaciasNoNameID(){
+    return this.farmaciasService.consultarFarmacia();
   }
 }

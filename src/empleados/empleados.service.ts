@@ -66,7 +66,8 @@ export class EmpleadosService {
       
       let employe = this.empleadoRepository.create({
         ... empleadoDto,
-        usuario: user
+        usuario: user,
+        fecha_ingreso: new Date().toISOString().split('T')[0],
       });
       employe = await this.empleadoRepository.save(employe);
       
@@ -77,7 +78,6 @@ export class EmpleadosService {
       
       medico = await this.medicoRepository.save(medico);
       console.log(medico);
-
       
       return {medico}
 
@@ -105,23 +105,45 @@ export class EmpleadosService {
     //No es necesario poner un trycatch porque la cedula que se le pasa al argumento
     //es la misma que la del admnistrador que se encuentra con la sesion activa.
     const data = await this.empleadoRepository.findOneBy({cedula})
-    if(!data) throw new BadRequestException(`No se encontro informaciondel empleado admnistrativo identificado con CC: ${cedula}`)
+    if(!data) throw new BadRequestException(`No se encontro informacion del empleado admnistrativo identificado con CC: ${cedula}`)
     return data?.id_empleado;
   }
 
-  async consultarMedicos(){
-    const medicos = await this.medicoRepository
-    .createQueryBuilder('medico')
-    .leftJoin('medico.empleado', 'empleado')
-    .leftJoin('empleado.usuario', 'usuario')
-    .select([
-        'usuario.nombre',
-        'usuario.cedula',
-        'empleado.id_empleado',
-        'medico.departamento'
-    ])
-    .getRawMany();
-    return medicos
+  async consultarMedicos(cedula?: string) {
+    if (cedula) {
+      const medico = await this.medicoRepository
+        .createQueryBuilder('medico')
+        .leftJoin('medico.empleado', 'empleado')
+        .leftJoin('empleado.usuario', 'usuario')
+        .select([
+          'usuario.nombre AS nombre',
+          'usuario.cedula AS cedula',
+          'empleado.id_empleado AS id_empleado',
+          'medico.departamento AS departamento'
+        ])
+        .where('usuario.cedula = :cedula', { cedula })
+        .getRawOne();
+
+      if (!medico) {
+        throw new NotFoundException(`No se encontró un médico con cédula ${cedula}`);
+      }
+      console.log(medico)
+      return [medico];
+    } else {
+      const medicos = await this.medicoRepository
+        .createQueryBuilder('medico')
+        .leftJoin('medico.empleado', 'empleado')
+        .leftJoin('empleado.usuario', 'usuario')
+        .select([
+          'usuario.nombre AS nombre',
+          'usuario.cedula AS cedula',
+          'empleado.id_empleado AS id_empleado',
+          'medico.departamento AS departamento'
+        ])
+        .getRawMany();
+      console.log(medicos)
+      return medicos;
+    }
   }
 
   async getMedico(cedula:string){
@@ -131,5 +153,14 @@ export class EmpleadosService {
       .where('empleado.cedula = :cedula', {cedula})
       .getRawOne()
       return medico;
+  }
+
+  async consultarId(cedula: string){
+    const id_empleado = await this.empleadoRepository
+        .createQueryBuilder('empl')
+        .where('empl.cedula = :cedula', {cedula})
+        .select('empl.id_empleado')
+        .getOne()
+    return id_empleado;
   }
 }

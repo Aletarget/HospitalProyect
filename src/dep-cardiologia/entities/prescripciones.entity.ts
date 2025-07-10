@@ -52,7 +52,7 @@ export class Prescripciones{
 
     @OneToMany(
         () => Prescripciones_Medicamentos,
-        prescripcion_medicamento => prescripcion_medicamento.id_prescripcion
+        prescripcion_medicamento => prescripcion_medicamento.prescripcion
     )
     medicamentos: Prescripciones_Medicamentos[]
 }

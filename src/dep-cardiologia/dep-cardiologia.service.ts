@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, forwardRef, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateCardiologoDto, CreateCitaDto, CreatePrescripcion_Medicamentos, UpdateHistorialDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Agendas, Cardiologos, Citas, Prescripciones, Prescripciones_Medicamentos } from './entities';
@@ -38,8 +38,9 @@ export class DepcardiologiaService {
 
         private readonly authService: AuthService,
         private readonly empleadosService: EmpleadosService,
-        private readonly pacienteService: PacientesService,
-        private readonly farmaciaService: FarmaciasService
+        private readonly farmaciaService: FarmaciasService,
+        @Inject(forwardRef(()=>PacientesService))
+        private readonly pacienteService: PacientesService
     ){}
 
     async createCardiologo(createCardiologoDto: CreateCardiologoDto){
@@ -101,7 +102,7 @@ export class DepcardiologiaService {
             })
         try {
             await this.agendaRepository.save(agenda)
-            return `La agenda se ha creado con exito`
+            return {ok: true}
         } catch (error) {
             this.logger.log(error.detail)
             throw new BadRequestException(error.message)
@@ -197,10 +198,11 @@ export class DepcardiologiaService {
 
         const {id_cita, id_medicamento, ...dataPrescripcion} = createPrescripcionMedicamento; 
 
-        const medicamento =  this.farmaciaService.consultarMedicamentos(id_medicamento);
+        const medicamentos = await this.farmaciaService.consultarMedicamentos(id_medicamento);
 
-        if(!medicamento) throw new BadRequestException(`El medicamento que digito no esta registrado en la base de datos`)
-
+        if (!medicamentos || medicamentos.length === 0) {
+        throw new BadRequestException(`El medicamento que digitó no está registrado en la base de datos`);
+        }
         const citaData = await this.citaRepositoty.findOne({
             where: { id_cita },
             relations: ['agenda', 'id_medico'],
@@ -224,7 +226,7 @@ export class DepcardiologiaService {
             }) 
             presMedicamento = await this.presMedRepository.save(presMedicamento);
             console.log({presMedicamento});
-            return `La prescripcion se ha creado con exito, su id es: ${presMedicamento.id_prescripcion}`
+            return {message: `La prescripcion se ha creado con exito, su id es: ${presMedicamento.id_prescripcion}`}
         } catch (error) {
             this.logger.log(error.detail)
             throw new BadRequestException (`Ha ocurrido un error: ${error}`)
@@ -232,7 +234,10 @@ export class DepcardiologiaService {
 
     }   
     async consultarPrescripciones(cedula:string){
-        const prescripciones = await this.prescripcionRepository.findBy({id_paciente: cedula})
+       const prescripciones = await this.prescripcionRepository.find({
+        where: { id_paciente: cedula },
+        relations: ['medicamentos'],
+        });
         return prescripciones
     }
 
@@ -259,7 +264,7 @@ export class DepcardiologiaService {
                     .getRawMany();
 
                 if (!agendas || agendas.length === 0)
-                    return `El médico con ID: ${term} no cuenta con agendas hasta la fecha`;
+                    throw new NotFoundException (`El médico con ID: ${term} no cuenta con agendas hasta la fecha`);
 
                 return agendas;
             } else {
@@ -311,7 +316,22 @@ export class DepcardiologiaService {
     async getCitas(cedula: string){
         const citas = await this.citaRepositoty
             .createQueryBuilder('citas')
+            .where('citas.id_paciente = :cedula', {cedula})
             .getRawMany()
         return citas
+    }
+
+    async getCitasMedico(id_medico: string){
+        if(!isUUID(id_medico)) throw new BadRequestException(`Ha ocurrido un error: Sebe de ingresar su id de empleado`)
+        const citas = await this.citaRepositoty
+            .createQueryBuilder('citas')
+            .where('citas.id_medico = :id_medico', {id_medico})
+            .getMany()
+        
+        if(!citas){
+            return {message: `Actualmente no tiene asignada ninguna cita medica`}
+        }
+        return citas;
+        
     }
 }

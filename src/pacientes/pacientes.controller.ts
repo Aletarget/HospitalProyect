@@ -7,7 +7,9 @@ import { CreateRegistroDto } from './entities';
 
 @Controller('pacientes')
 export class PacientesController {
-  constructor(private readonly pacientesService: PacientesService) {}
+  constructor(
+    private readonly pacientesService: PacientesService,
+  ) {}
 
   @Post('regPaciente')
   @Auth(permisosValidos.admin, permisosValidos.superUser)
@@ -27,4 +29,10 @@ export class PacientesController {
   crearRegistro(@Body() createRegistroDto: CreateRegistroDto) {
     return this.pacientesService.crearRegistro(createRegistroDto);
   }
+
+    @Get('getCitas/:cedula')
+  @Auth(permisosValidos.admin, permisosValidos.medico, permisosValidos.user, permisosValidos.superUser)
+  getCitas(@Param('cedula') cedula: string) {
+    return this.pacientesService.getCitas(cedula);
+  } 
 }

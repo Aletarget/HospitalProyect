@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { DepcardiologiaService } from './dep-cardiologia.service';
 import { DepcardiologiaController } from './dep-cardiologia.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,8 +7,8 @@ import { Prescripciones_Medicamentos } from './entities/pres-medic.entity';
 import { Actualiza } from './entities/actualiza.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { EmpleadosModule } from 'src/empleados/empleados.module';
-import { PacientesModule } from 'src/pacientes/pacientes.module';
 import { FarmaciasModule } from 'src/farmacias/farmacias.module';
+import { PacientesModule } from 'src/pacientes/pacientes.module';
 
 @Module({
   controllers: [DepcardiologiaController],
@@ -16,8 +16,8 @@ import { FarmaciasModule } from 'src/farmacias/farmacias.module';
   imports: [
     AuthModule,
     EmpleadosModule,
-    PacientesModule,
     FarmaciasModule,
+    forwardRef(() =>PacientesModule),
     TypeOrmModule.forFeature(
       [ Agendas, 
         Cardiologos, 
@@ -28,7 +28,9 @@ import { FarmaciasModule } from 'src/farmacias/farmacias.module';
       ], 
       'cardiologiConnection')
 
+  ],
+  exports: [
+    DepcardiologiaService
   ]
 })
 export class DepcardiologiaModule {}
- 

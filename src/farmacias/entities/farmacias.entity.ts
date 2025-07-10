@@ -53,7 +53,7 @@ export class Farmacias {
 
     @OneToMany(
             () => Adquiere,
-            adquiere => adquiere.id_farmacia,
+            adquiere => adquiere.farmacia,
             {
                 cascade: true,
                 eager: true

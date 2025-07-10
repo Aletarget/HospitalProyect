@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -10,6 +10,7 @@ import { Historia_clinica } from './entities/hist-clinica.entity';
 
 import { CreateDefPacienteDto } from './dto/crate-defPaciente.dto';
 import { CreateRegistroDto } from './entities';
+import { DepcardiologiaService } from 'src/dep-cardiologia/dep-cardiologia.service';
 // import { CreateRegistroDto } from './entities';
 
 
@@ -29,6 +30,10 @@ export class PacientesService {
     private readonly registrosRepository: Repository<Registro>,
 
     private readonly authService: AuthService,
+    
+    @Inject(forwardRef(()=>DepcardiologiaService))
+    private readonly depCardioService: DepcardiologiaService
+
   ){}
 
 
@@ -120,5 +125,9 @@ export class PacientesService {
     if(!paciente) throw new BadRequestException(`El paciente con cc: ${cedula} no se encontro`)
     const historial = await this.historiaReposority.findOneBy({paciente})
     return historial!.id_historial;
+  }
+
+  async getCitas(cedula:string){
+    return await this.depCardioService.getCitas(cedula);
   }
 }
